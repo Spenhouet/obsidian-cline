@@ -1,0 +1,19 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "symlink build",
+            "type": "shell",
+            "command": "(rm build || true) && ln -s ${input:symlinkTarget} build",
+            "problemMatcher": [],
+            "group": "build"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "symlinkTarget",
+            "type": "promptString",
+            "description": "Enter path to symlink source"
+        }
+    ]
+}

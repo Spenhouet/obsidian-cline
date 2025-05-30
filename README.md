@@ -1,94 +1,89 @@
-# Obsidian Sample Plugin
+# Obsigent: Your Obsidian Agent
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+> [!IMPORTANT] 
+> Obsigent is (yet) only a proof-of-concept and exploration of ideas. While the core chat functionality is in place, the advanced agentic features and deep command integration described herein are part of the future vision and might be developed. The plan is to have a fully truely open source solution. Contributions are welcome.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+**Obsigent** is an Obsidian plugin that transforms your note-taking environment into an intelligent, agentic workspace. It acts as an AI copilot, deeply integrated with Obsidian, capable of understanding your notes, interacting with your vault, and leveraging Obsidian's command ecosystem to assist you in a variety of tasks. It is particularly well-suited as a professional tool for creating and maintaining complex documentation, such as Quality Manuals (QM) or Technical Documentation (TD).
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+## Vision
 
-## First time developing plugins?
+Obsigent aims to be more than just a chat interface. It's envisioned as a true "second brain" assistant that can:
 
-Quick starting guide for new plugin devs:
+*   **Understand Your Knowledge:** Seamlessly access and comprehend the content of your Obsidian vault.
+*   **Automate Complex Tasks:** Execute sequences of Obsidian commands, including those from other plugins, to perform complex operations. This is central to its power, enabling it to act as a genuine assistant for tasks like drafting sections of a Quality Manual based on existing notes, or updating technical specifications across multiple documents.
+*   **Augment Your Workflow:** Assist with content creation, summarization, research, and task management directly within Obsidian, streamlining the development of professional documentation.
+*   **Be Extensible:** Utilize the Model Context Protocol (MCP) to connect with external tools and services, expanding its capabilities beyond Obsidian's native functions.
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+## Core Features
 
-## Releasing new releases
+*   **Agentic AI Chat:** Engage in natural language conversations with an AI that can take actions within your Obsidian vault.
+*   **Deep Obsidian Integration for Professional Documentation:**
+    *   **Vault Awareness:** Reads and understands your notes to provide contextually relevant assistance for your documentation projects.
+    *   **Note Interaction:** Creates, modifies, and organizes notes based on your requests, helping to structure and maintain QMs, TDs, and other complex documents.
+    *   **Command Execution via MCP:** Leverages Obsidian's command palette, including commands from other plugins, to perform actions. This is a key feature, allowing Obsigent to, for example, refactor notes, run custom scripts for document generation, or interact with other plugin functionalities based on your instructions.
+*   **Model Context Protocol (MCP) Support:**
+    *   Connects to MCP-compliant tool servers, enabling the AI to use a wide array of external tools and data sources relevant to your professional work.
+    *   Allows Obsigent to orchestrate complex workflows by combining Obsidian commands with external tool capabilities, crucial for managing large-scale documentation.
+*   **Multi-Provider LLM Support:**
+    *   Configure and switch between various Large Language Model (LLM) providers (e.g., OpenAI, Ollama, Anthropic).
+    *   Tailor API keys, endpoints, and default models for each provider.
+*   **Contextual Note Referencing:** Use `[[` link syntax to easily include the content of specific notes in your conversation with the AI.
+*   **Streaming Responses:** Get real-time feedback from the AI.
+*   **Local Tool Execution:** Supports predefined local tools for common Obsidian-specific tasks.
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+## How it Works: Leveraging Obsidian Commands via MCP for Documentation Workflows
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+A core design principle of Obsigent is its ability to act as an agent that can utilize any Obsidian command, making it exceptionally powerful for documentation-centric workflows. This is envisioned to work as follows:
 
-## Adding your plugin to the community plugin list
+1.  **Command Discovery:** Obsigent will have a mechanism to discover available Obsidian commands, including those registered by other community plugins.
+2.  **MCP Tool Abstraction:** These discovered Obsidian commands will be exposed to the LLM as tools via the Model Context Protocol (MCP). This means the LLM can "see" and "understand" what actions are possible within Obsidian.
+3.  **User Request & AI Planning (e.g., for a Quality Manual):** When you make a request (e.g., "Draft a new section for the QM on 'Risk Management' based on notes X, Y, and Z, and ensure it follows the standard QM template"), the LLM can plan a sequence of actions. This might involve:
+    *   Identifying the relevant notes (X, Y, Z) and the QM template.
+    *   Reading the content of these notes and the template structure.
+    *   Invoking an Obsidian command (or a series of commands) to create a new note for the QM section.
+    *   Synthesizing information from notes X, Y, and Z into the new section, adhering to the template.
+    *   Invoking an Obsidian command to write the content to the new note and potentially link it appropriately within the QM structure.
+4.  **Execution & Feedback:** Obsigent executes the planned commands and provides feedback or results, allowing for iterative refinement of the documentation.
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+This approach allows for powerful automation and integration, as Obsigent can dynamically leverage the ever-expanding functionality of the Obsidian ecosystem to support demanding professional documentation tasks.
 
-## How to use
+## Getting Started
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+1.  **Installation:** Install Obsigent from the Obsidian community plugin browser (once available).
+2.  **Configuration:**
+    *   Open Obsigent settings in Obsidian.
+    *   Select your preferred LLM provider and enter your API key and model preferences.
+    *   (Optional) Configure any external MCP tool servers you wish to use.
 
-## Manually installing the plugin
+### Using Obsigent for Documentation and More
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+*   **Chat Interface:** Open the Obsigent chat view (e.g., via a ribbon icon or command).
+*   **Interact:** Type your requests or questions. Be specific about what you want Obsigent to do (e.g., "Update the 'Version History' section in 'TD-001' to reflect the latest changes," or "Find all notes related to 'ISO 9001 compliance' and summarize them").
+*   **Reference Notes:** Use `[[` link syntax to include note content in your prompts.
+*   **Observe Actions:** Obsigent will inform you about the tools or commands it intends to use.
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
+## Development
 
-## Funding URL
+This project is under active development.
 
-You can include funding URLs where people who use your plugin can financially support it.
+1.  **Clone the Repository:** `git clone <repository-url>` (The URL will be updated once the repository is public)
+2.  **Install Dependencies:** `bun install`
+3.  **Build for Development:** `bun run dev` - This will watch for changes and rebuild.
+4.  **Install in Obsidian:**
+    *   Copy `main.js`, `styles.css`, and `manifest.json` to your Obsidian vault's `.obsidian/plugins/obsigent/` folder.
+    *   Reload Obsidian or disable and re-enable the Obsigent plugin.
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+## Contributing
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
+Contributions, ideas, and feedback are highly welcome, especially those focused on enhancing Obsigent's capabilities for professional documentation and agentic workflows. Please feel free to open an issue or submit a pull request. (Further details on contribution guidelines will be added).
 
-If you have multiple URLs, you can also do:
+## Future Vision
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+*   **Enhanced Agentic Capabilities for Documentation:** More sophisticated planning and execution of complex, multi-step documentation tasks (e.g., "Review all procedures in the QM for consistency with the new 'Change Management' policy and flag discrepancies").
+*   **Proactive Assistance for Document Maintenance:** Suggestions for updates, reviews, or archiving based on your vault activity and document metadata.
+*   **Visual Tool Building for Documentation Workflows:** A user interface for creating and managing custom toolchains that combine Obsidian commands and MCP tools, tailored for specific documentation processes.
+*   **Community Tool Marketplace:** A way to share and discover Obsigent-compatible tools and workflows, including pre-built solutions for common documentation standards.
 
-## API Documentation
+## License
 
-See https://github.com/obsidianmd/obsidian-api
+Obsigent is released under the MIT License. See the [LICENSE](LICENSE) file for details.

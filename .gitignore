@@ -1,5 +1,12 @@
+references
+.references
+
 # vscode
-.vscode 
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
 # Intellij
 *.iml
@@ -11,6 +18,10 @@ node_modules
 # Don't include the compiled main.js file in the repo.
 # They should be uploaded to GitHub releases instead.
 main.js
+
+# Build output
+build/
+build
 
 # Exclude sourcemaps
 *.map

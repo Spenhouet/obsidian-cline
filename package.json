@@ -1,15 +1,21 @@
 {
-	"name": "obsidian-sample-plugin",
-	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"name": "obsigent",
+	"version": "0.9.9",
+	"description": "AI chat and tools for Obsidian, renamed to Obsigent.",
 	"main": "main.js",
 	"scripts": {
-		"dev": "node esbuild.config.mjs",
-		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-		"version": "node version-bump.mjs && git add manifest.json versions.json"
+		"dev": "bun run esbuild.config.mjs",
+		"build": "bun run tsc -noEmit -skipLibCheck && bun run esbuild.config.mjs production && cp styles.css build/styles.css && cp manifest.json build/manifest.json",
+		"version": "bun run version-bump.mjs && git add manifest.json versions.json"
 	},
-	"keywords": [],
-	"author": "",
+	"keywords": [
+		"obsidian",
+		"plugin",
+		"ai",
+		"chat",
+		"obsigent"
+	],
+	"author": "Sebastian Penhouet",
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.6",

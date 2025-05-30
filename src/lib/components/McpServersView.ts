@@ -1,5 +1,5 @@
-import { Setting, Notice } from 'obsidian';
-import { McpServer } from '../types/mcp';
+import { Notice } from 'obsidian';
+import type { McpServer } from '../../types/mcp';
 
 export class McpServersView {
     private containerEl: HTMLElement;

@@ -1,8 +1,8 @@
 // src/api/AnthropicProvider.ts
-import { Notice } from 'obsidian';
-import { ObsigentPluginSettings } from '../main';
-import { McpTool } from '../types/mcp';
-import { LLMProvider, StreamCallbacks, ProviderSettings, OpenAIMessage as GenericOpenAIMessage } from './LLMProvider';
+import { Notice, requestUrl } from 'obsidian';
+import type { ObsigentPluginSettings } from '../main';
+import type { McpTool } from '../types/mcp';
+import type { LLMProvider, StreamCallbacks, ProviderSettings, OpenAIMessage as GenericOpenAIMessage } from './LLMProvider';
 
 // Anthropic specific interfaces
 interface AnthropicMessageContentBlock {

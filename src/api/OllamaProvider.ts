@@ -1,9 +1,9 @@
 // src/api/OllamaProvider.ts
 import { Notice } from 'obsidian';
-import { ObsigentPluginSettings } from '../main';
-import { McpTool } from '../types/mcp';
-import { LLMProvider, StreamCallbacks, ProviderSettings, LLMProviderType } from './LLMProvider'; 
-import { OpenAIMessage } from './OpenAIProvider'; // Import OpenAIMessage directly
+import type { ObsigentPluginSettings } from '../main';
+import type { McpTool } from '../types/mcp';
+import type { LLMProvider, StreamCallbacks, ProviderSettings, LLMProviderType } from './LLMProvider'; 
+import type { OpenAIMessage } from './OpenAIProvider'; // Import OpenAIMessage directly
 
 // Ollama specific request/response structures (simplified for chat)
 interface OllamaChatRequest {

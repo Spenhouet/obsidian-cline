@@ -13,8 +13,8 @@
 // - main.ts (ObsigentPluginCore.runCommandInTerminal for actual command execution)
 
 import { Notice } from 'obsidian';
-import { ObsigentPluginSettings } from '../main';
-import { McpServer, McpTool, McpToolSchema } from '../types/mcp'; // McpServer is now ToolHive-centric
+import type { ObsigentPluginSettings } from '../main';
+import type { McpServer, McpTool, McpToolSchema } from '../types/mcp'; // McpServer is now ToolHive-centric
 
 // The McpTool, McpManifest, McpToolParameter, McpToolSchema interfaces
 // were related to direct MCP server interaction and manifest parsing.

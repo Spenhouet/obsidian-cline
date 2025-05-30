@@ -1,5 +1,5 @@
 import { requestUrl } from 'obsidian';
-import {
+import type {
     ToolHiveRegistry, 
     ToolHiveRegistryTool,
     ToolHiveMarketplaceItem,

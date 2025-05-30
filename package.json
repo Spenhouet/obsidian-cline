@@ -1,12 +1,14 @@
 {
 	"name": "obsigent",
 	"version": "0.9.9",
+	"type": "module",
 	"description": "AI chat and tools for Obsidian, renamed to Obsigent.",
 	"main": "main.js",
 	"scripts": {
-		"dev": "bun run esbuild.config.mjs",
-		"build": "bun run tsc -noEmit -skipLibCheck && bun run esbuild.config.mjs production && cp styles.css build/styles.css && cp manifest.json build/manifest.json",
-		"version": "bun run version-bump.mjs && git add manifest.json versions.json"
+		"dev": "bunx vite dev",
+		"build": "bunx vite build && bun run svelte-check",
+		"version": "bun run version-bump.mjs && git add manifest.json versions.json",
+		"svelte-check": "svelte-check --tsconfig tsconfig.json"
 	},
 	"keywords": [
 		"obsidian",
@@ -18,13 +20,24 @@
 	"author": "Sebastian Penhouet",
 	"license": "MIT",
 	"devDependencies": {
-		"@types/node": "^16.11.6",
+		"@internationalized/date": "^3.5.6",
+		"@sveltejs/vite-plugin-svelte": "^5.0.3",
+		"@tailwindcss/vite": "^4.1.8",
+		"@types/node": "^16.18.126",
 		"@typescript-eslint/eslint-plugin": "5.29.0",
 		"@typescript-eslint/parser": "5.29.0",
-		"builtin-modules": "3.3.0",
-		"esbuild": "0.17.3",
-		"obsidian": "latest",
+		"autoprefixer": "^10.4.21",
+		"bits-ui": "^2.1.0",
+		"clsx": "^2.1.1",
+			"obsidian": "latest",
+		"svelte": "^5.33.10",
+		"svelte-check": "^4.2.1",
+		"tailwind-merge": "^3.3.0",
+		"tailwind-variants": "^1.0.0",
+		"tailwindcss": "^4.1.8",
+		"tailwindcss-animate": "^1.0.7",
 		"tslib": "2.4.0",
-		"typescript": "4.7.4"
+		"typescript": "^5.8.3",
+		"vite": "^6.3.5"
 	}
 }

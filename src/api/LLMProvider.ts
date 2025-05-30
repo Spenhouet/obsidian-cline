@@ -1,8 +1,9 @@
 // src/api/LLMProvider.ts
-import { ObsigentPluginSettings } from '../main'; 
-import { OpenAIMessage } from './OpenAIProvider'; // Imported from OpenAIProvider
+import { Notice } from 'obsidian';
+import type { ObsigentPluginSettings } from '../main';
+import type { OpenAIMessage } from './OpenAIProvider'; // Imported from OpenAIProvider
 export type { OpenAIMessage }; // Re-export OpenAIMessage for use by other modules importing from LLMProvider
-import { McpTool, McpToolSchema } from '../types/mcp'; // Corrected import path
+import type { McpTool, McpToolSchema } from '../types/mcp'; // Corrected import path
 // Note: OpenAIMessage and McpTool might need to become more generic if providers differ significantly
 
 // Callbacks for streaming API - this can be a shared interface

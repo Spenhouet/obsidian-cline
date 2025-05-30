@@ -3,16 +3,18 @@
 
 declare const default_api: any; // Declare default_api as a global variable
 
-import { Notice, Plugin, WorkspaceLeaf, App } from 'obsidian';
+import { Notice, Plugin, WorkspaceLeaf } from 'obsidian';
 import { ObsigentSettingTab } from './settings';
 import { ChatView, CHAT_VIEW_TYPE } from './views/ChatView';
-import { OpenAIProvider, OpenAIMessage, OpenAIToolCall } from './api/OpenAIProvider';
+import { OpenAIProvider } from './api/OpenAIProvider';
+import type { OpenAIMessage, OpenAIToolCall } from './api/OpenAIProvider';
 import { OllamaProvider } from './api/OllamaProvider';
 import { AnthropicProvider } from './api/AnthropicProvider';
-import { LLMProvider, LLMProviderType, ProviderSettings, StreamCallbacks, LLM_PROVIDER_NAMES } from './api/LLMProvider'; // Added LLM_PROVIDER_NAMES
+import type { LLMProvider, LLMProviderType, ProviderSettings, StreamCallbacks } from './api/LLMProvider'; // Added LLM_PROVIDER_NAMES
+import { LLM_PROVIDER_NAMES } from './api/LLMProvider'; // Added LLM_PROVIDER_NAMES
 import { McpService } from './services/McpService';
 import { LocalToolService } from './services/LocalToolService';
-import { McpServer, McpMarketplaceCatalog, McpTool, McpToolSchema } from './types/mcp'; // McpTool and McpToolSchema correctly imported
+import type { McpServer, McpMarketplaceCatalog, McpTool } from './types/mcp'; // McpTool correctly imported
 
 export interface ObsigentPluginSettings {
   // Old global settings (will be deprecated or used as fallback initially)
@@ -67,9 +69,7 @@ const DEFAULT_SETTINGS: ObsigentPluginSettings = {
   githubStarsCache: {} // Initialize GitHub stars cache as an empty object
 };
 
-export default class ObsigentPluginCore {
-  plugin: Plugin;
-  app: App;
+export default class ObsigentPlugin extends Plugin {
   settings: ObsigentPluginSettings;
   chatViewInstance: ChatView | null = null;
   chatHistory: OpenAIMessage[] = []; // Using OpenAIMessage for now
@@ -96,10 +96,7 @@ export default class ObsigentPluginCore {
     }
   }
 
-  constructor(plugin: Plugin) {
-    this.plugin = plugin;
-    this.app = plugin.app;
-  }
+  
 
   async onload() {
     await this.loadSettings();
@@ -115,9 +112,9 @@ export default class ObsigentPluginCore {
     this.localToolService = new LocalToolService(this.app);
     this.updateActiveLLMProvider(); // Initialize the active LLM provider
 
-    this.plugin.addSettingTab(new ObsigentSettingTab(this.plugin.app, this.plugin, this));
+    this.addSettingTab(new ObsigentSettingTab(this.app, this, this));
 
-    this.plugin.registerView(
+    this.registerView(
       CHAT_VIEW_TYPE,
       (leaf: WorkspaceLeaf) => {
         this.chatViewInstance = new ChatView(leaf, this);
@@ -130,11 +127,11 @@ export default class ObsigentPluginCore {
       }
     );
 
-    this.plugin.addRibbonIcon('bot', 'Open Obsigent Chat', () => {
+    this.addRibbonIcon('bot', 'Open Obsigent Chat', () => {
       this.activateChatView();
     });
 
-    this.plugin.addCommand({
+    this.addCommand({
       id: 'open-obsigent-chat',
       name: 'Open Obsigent Chat View',
       callback: () => {
@@ -196,15 +193,15 @@ export default class ObsigentPluginCore {
 
   onunload() {
     console.log('ObsigentPluginCore unloaded');
-    this.plugin.app.workspace.detachLeavesOfType(CHAT_VIEW_TYPE);
+    this.app.workspace.detachLeavesOfType(CHAT_VIEW_TYPE);
   }
 
   async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.plugin.loadData());
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
   }
 
   async saveSettings() {
-    await this.plugin.saveData(this.settings);
+    await this.saveData(this.settings);
     if (this.mcpService) {
         this.mcpService = new McpService(this.settings);
         this.mcpService.setStatusChangeCallback((servers) => {
@@ -215,16 +212,16 @@ export default class ObsigentPluginCore {
   }
 
   activateChatView() {
-    this.plugin.app.workspace.detachLeavesOfType(CHAT_VIEW_TYPE); 
-    const rightLeaf = this.plugin.app.workspace.getRightLeaf(false);
+    this.app.workspace.detachLeavesOfType(CHAT_VIEW_TYPE); 
+    const rightLeaf = this.app.workspace.getRightLeaf(false);
     if (rightLeaf) {
       rightLeaf.setViewState({
         type: CHAT_VIEW_TYPE,
         active: true,
       }).then(() => {
-        const leaf = this.plugin.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)[0];
+        const leaf = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE)[0];
         if (leaf) {
-            this.plugin.app.workspace.revealLeaf(leaf);
+            this.app.workspace.revealLeaf(leaf);
             const view = leaf.view as ChatView;
             if (view && view.displayMessage) {
                 this.chatHistory.forEach(msg => {
@@ -330,27 +327,27 @@ export default class ObsigentPluginCore {
     const allAvailableTools: McpTool[] = [...localTools];
 
     let accumulatedContent = "";
-    let aiMessageContentEl: HTMLDivElement | null = null;
+    let aiMessageId: string | null = null; // Changed from HTMLDivElement | null
     let currentToolCalls: OpenAIToolCall[] = []; // Using OpenAI specific type for now
 
     (async () => { 
-        aiMessageContentEl = await view.displayMessage(" Obsigent is thinking...", 'ai');
+        aiMessageId = await view.displayMessage(" Obsigent is thinking...", 'ai');
     })();
 
     const processLlmTurn = async (messagesForLlm: OpenAIMessage[], isFollowUp: boolean = false) => {
         accumulatedContent = ""; 
-        if (!isFollowUp && aiMessageContentEl) { 
-             view.updateAIMessageContent(aiMessageContentEl, " ", false); 
+        if (!isFollowUp && aiMessageId) { 
+             view.updateAIMessageContent(aiMessageId, " ", false); 
         } else if (isFollowUp) { 
-            aiMessageContentEl = await view.displayMessage(" ", 'ai');
+            aiMessageId = await view.displayMessage(" ", 'ai');
         }
         currentToolCalls = [];
 
         const streamCallbacks: StreamCallbacks = {
             onContent: (contentChunk: string, isFinal: boolean) => {
-                if (!aiMessageContentEl) return;
+                if (!aiMessageId) return;
                 accumulatedContent += contentChunk;
-                view.updateAIMessageContent(aiMessageContentEl, accumulatedContent, isFinal);
+                view.updateAIMessageContent(aiMessageId, accumulatedContent, isFinal);
             },
             onToolCallsDone: async (toolCallsFromProvider: any[]) => { 
                 const typedToolCalls = toolCallsFromProvider as OpenAIToolCall[];
@@ -421,9 +418,9 @@ export default class ObsigentPluginCore {
                 await processLlmTurn([...this.chatHistory], true); 
             },
             onError: (error: string) => {
-                if (aiMessageContentEl && accumulatedContent.trim() === "" && !error.toLowerCase().includes("unsupported")) { // Avoid double error messages if already shown by Notice
-                    view.updateAIMessageContent(aiMessageContentEl, error, true); 
-                } else if (!aiMessageContentEl || accumulatedContent.trim() !== "") {
+                if (aiMessageId && accumulatedContent.trim() === "" && !error.toLowerCase().includes("unsupported")) { // Avoid double error messages if already shown by Notice
+                    view.updateAIMessageContent(aiMessageId, error, true); 
+                } else if (!aiMessageId || accumulatedContent.trim() !== "") {
                     view.displayMessage(error, 'error');
                 }
                 // If it's an "unsupported" error, the Notice might have already covered it.

@@ -1,6 +1,6 @@
 // src/services/LocalToolService.ts
 import { App, Notice, TFile } from 'obsidian';
-import { McpTool, McpToolSchema } from '../types/mcp';
+import type { McpTool, McpToolSchema } from '../types/mcp';
 
 export class LocalToolService {
     private app: App;

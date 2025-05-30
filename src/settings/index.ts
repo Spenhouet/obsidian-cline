@@ -3,4 +3,4 @@
 
 export { ObsigentSettingTab } from './SettingsTab';
 export { ChatView } from '../views/ChatView'; // Corrected path for ChatView
-export { McpMarketplaceView } from '../components/McpMarketplaceView';
+export { McpMarketplaceView } from '$lib/components/McpMarketplaceView';

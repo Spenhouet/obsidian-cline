@@ -1,13 +1,14 @@
 import { App, Plugin, PluginSettingTab, Setting, Notice, ValueComponent } from 'obsidian';
-import ObsigentPluginCore from '../main';
-import { LLMProviderType, ALL_LLM_PROVIDERS, LLM_PROVIDER_NAMES, ProviderSettings } from '../api/LLMProvider';
-import { McpMarketplaceView } from '../components/McpMarketplaceView';
-import { McpServersView } from '../components/McpServersView';
-import { McpServer, ToolHiveMarketplaceItem } from '../types/mcp';
+import ObsigentPlugin from '../main';
+import type { LLMProviderType, ProviderSettings } from '../api/LLMProvider';
+import { ALL_LLM_PROVIDERS, LLM_PROVIDER_NAMES } from '../api/LLMProvider';
+import { McpMarketplaceView } from '$lib/components/McpMarketplaceView';
+import { McpServersView } from '$lib/components/McpServersView';
+import type { McpServer, ToolHiveMarketplaceItem } from '../types/mcp';
 import { McpMarketplaceService } from '../services/McpMarketplaceService';
 
 export class ObsigentSettingTab extends PluginSettingTab {
-    pluginCore: ObsigentPluginCore;
+    pluginCore: ObsigentPlugin;
     private providerSettingsContainer: HTMLDivElement;
     private mcpServersContainer: HTMLDivElement;
     private mcpMarketplaceContainer: HTMLDivElement;
@@ -15,7 +16,7 @@ export class ObsigentSettingTab extends PluginSettingTab {
     private mcpServersView: McpServersView | null = null;
     private marketplaceService: McpMarketplaceService;
 
-    constructor(app: App, plugin: Plugin, pluginCore: ObsigentPluginCore) {
+    constructor(app: App, plugin: Plugin, pluginCore: ObsigentPlugin) {
         super(app, plugin);
         this.pluginCore = pluginCore;
         this.marketplaceService = new McpMarketplaceService();

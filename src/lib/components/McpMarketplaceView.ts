@@ -1,6 +1,6 @@
-import { Setting, Notice, DropdownComponent } from 'obsidian';
-import { ToolHiveMarketplaceItem, McpServer } from '../types/mcp';
-import { McpMarketplaceService } from '../services/McpMarketplaceService';
+import { Notice, Setting, DropdownComponent } from 'obsidian';
+import type { ToolHiveMarketplaceItem, McpServer } from '../../types/mcp';
+import { McpMarketplaceService } from '../../services/McpMarketplaceService';
 
 export class McpMarketplaceView {
     private containerEl: HTMLElement;
@@ -191,7 +191,7 @@ export class McpMarketplaceView {
     }
 
     private getAvailableCategories(): string[] {
-        return this.marketplaceService.cachedCatalog?.categories.concat(this.marketplaceService.cachedCatalog?.tags || []).filter((v, i, a) => a.indexOf(v) === i).sort() || [];
+        return this.marketplaceService.cachedCatalog?.categories.concat(this.marketplaceService.cachedCatalog?.tags || []).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i).sort() || [];
     }
 
     private renderItems(): void {
@@ -279,7 +279,7 @@ export class McpMarketplaceView {
         stats.style.color = 'var(--text-muted)';
         stats.style.marginTop = '4px';
         
-        const statsItems = [];
+        const statsItems: string[] = []; // Initialize as string[]
         if (item.stars !== undefined) {
             statsItems.push(`${item.icon || '⭐'} ${item.stars} stars`);
         }

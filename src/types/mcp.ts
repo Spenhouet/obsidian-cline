@@ -9,9 +9,17 @@ export type McpMode = "full" | "server-use-only" | "off";
 export type McpTool = {
 	name: string;
 	description?: string;
-	inputSchema?: McpToolSchema; // Changed from object to McpToolSchema
-	autoApprove?: boolean;
+	inputSchema: McpToolSchema;
+	annotations?: McpToolAnnotations;
 };
+
+export interface McpToolAnnotations {
+    title?: string;
+    readOnlyHint?: boolean;
+    destructiveHint?: boolean;
+    idempotentHint?: boolean;
+    openWorldHint?: boolean;
+}
 
 // Define McpToolSchema (moved from McpService.ts and exported)
 export interface McpToolParameter {
@@ -23,14 +31,37 @@ export interface McpToolParameter {
     items?: McpToolParameter; // For array type
 }
 
+export interface McpToolSchemaProperties {
+    [key: string]: {
+        type: string;
+        description?: string;
+        items?: { type: string; enum?: string[] } | { enum: string[] };
+        enum?: string[];
+    };
+}
+
 export interface McpToolSchema {
     type: "object";
-    properties: Record<string, McpToolParameter>;
+    properties: McpToolSchemaProperties;
     required?: string[];
 }
 
-// This interface represents an MCP server instance managed by the plugin.
-// With ToolHive, this will represent a tool that ToolHive is managing.
+export interface CachedCommandMcpDetails {
+    id: string;
+    originalName: string; // Store original command name for comparison
+    description?: string; // Human-readable description, potentially LLM generated
+    inputSchema: McpToolSchema; // JSON schema for parameters
+    annotations?: McpToolAnnotations; // Optional hints about tool behavior
+}
+
+// This interface defines the expected structure from an LLM call
+// when generating full details for an Obsidian command.
+export interface GeneratedCommandMcpDetails {
+    description: string;
+    inputSchema: McpToolSchema;
+    annotations: McpToolAnnotations;
+}
+
 export interface McpServer {
 	toolHiveToolName: string; // The unique name used by ToolHive (e.g., "stacklok/mcp-summary")
 	displayName?: string; // User-friendly display name, can be derived from marketplace item
@@ -55,7 +86,7 @@ export type McpResourceTemplate = {
 };
 
 export type McpResourceResponse = {
-	_meta?: Record<string, any>;
+	_meta?: Record<string, unknown>; // Changed any to unknown
 	contents: Array<{
 		uri: string;
 		mimeType?: string;
@@ -65,7 +96,7 @@ export type McpResourceResponse = {
 };
 
 export type McpToolCallResponse = {
-	_meta?: Record<string, any>;
+	_meta?: Record<string, unknown>; // Changed any to unknown
 	content: Array<
 		| {
 				type: "text";
@@ -104,8 +135,8 @@ export interface McpGetApiItem {
 	homepage: string;
 	license: string;
 	runtime: string;
-	versions: any[];
-	dependencies: any;
+	versions: Record<string, unknown>[]; // Changed any[] to Record<string, unknown>[]
+	dependencies: Record<string, unknown>; // Changed any to Record<string, unknown>
 	lastUpdated: string;
 	viewCount: string;
 	createdAt: string;
@@ -152,10 +183,10 @@ export interface ToolHiveRegistryTool {
 	metadata?: ToolHiveToolMetadata;
 	args?: string[];
 	env_vars?: Array<{ name: string; description?: string; required?: boolean; default?: string; }>;
-	permissions?: any; // Define more strictly if needed
+	permissions?: Record<string, unknown>; // Changed any to Record<string, unknown>
 	transport?: string;
 	target_port?: number;
-	provenance?: any; // Define more strictly if needed
+	provenance?: Record<string, unknown>; // Changed any to Record<string, unknown>
 }
 
 // Represents the structure of the ToolHive registry.json file
@@ -188,3 +219,40 @@ export interface McpDownloadResponse {
 }
 
 export type McpViewTab = "marketplace" | "addRemote" | "installed";
+
+export interface McpMessageContent {
+    type: 'text' | 'image_url' | 'tool_use' | 'tool_result';
+    text?: string;
+    image_url?: { url: string };
+    tool_use_id?: string;
+    tool_name?: string;
+    tool_input?: Record<string, unknown>;
+    tool_content?: McpMessageContent[]; // For tool_result, if it contains structured content
+    is_error?: boolean; // For tool_result
+}
+
+export interface McpMessage {
+    role: 'user' | 'assistant' | 'system' | 'tool';
+    content: string | McpMessageContent[];
+    name?: string; // Optional: The name of the tool that was called (for role: 'tool')
+    tool_call_id?: string; // Optional: The ID of the tool call (for role: 'tool')
+    tool_calls?: { // For role: 'assistant', when it wants to call tools
+        id: string;
+        type: 'function'; // MCP typically uses 'tool' or implies it, 'function' is common in OpenAI
+        function: {
+            name: string;
+            arguments: string; // JSON string of arguments
+        };
+    }[];
+}
+
+// For executeTool return type
+export interface McpToolCallResultContent {
+    type: "text"; // Can be expanded later (e.g., "json", "markdown")
+    text: string;
+}
+
+export interface McpToolCallResult {
+    isError?: boolean;
+    content: McpToolCallResultContent[];
+}

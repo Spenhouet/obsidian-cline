@@ -1,20 +1,43 @@
 // src/api/LLMProvider.ts
 import { ObsigentPluginSettings } from '../main'; 
-import { OpenAIMessage } from './OpenAIProvider'; // Imported from OpenAIProvider
-export type { OpenAIMessage }; // Re-export OpenAIMessage for use by other modules importing from LLMProvider
-import { McpTool, McpToolSchema } from '../types/mcp'; // Corrected import path
-// Note: OpenAIMessage and McpTool might need to become more generic if providers differ significantly
+import { OpenAIMessage, OpenAIToolCall } from './OpenAIProvider'; // Imported from OpenAIProvider
+export type { OpenAIMessage, OpenAIToolCall }; // Re-export OpenAIMessage for use by other modules importing from LLMProvider
+import { McpTool } from '../types/mcp'; // Corrected import path
+
+// Define ToolCall and ToolCallFunction here as they are used by StreamCallbacks
+export interface ToolCallFunction {
+    name: string;
+    arguments: string; // JSON string of arguments
+}
+
+export interface ToolCall {
+    id: string; // Unique ID for the tool call, to be sent back with the result
+    type: 'function'; // Currently, only 'function' is supported
+    function: ToolCallFunction;
+}
 
 // Callbacks for streaming API - this can be a shared interface
 // For now, let's assume StreamCallbacks will also be defined here or imported if it's truly generic.
 // Re-defining it here for clarity during refactor, can consolidate later.
 export interface StreamCallbacks {
-    onContent: (contentChunk: string, isFinal: boolean) => void;
-    onToolCallChunk?: (toolCallChunk: any, isFinal: boolean, toolCallIndex: number) => void; // 'any' for now, ideally generic
-    onToolCallsDone?: (toolCalls: any[]) => void; // 'any[]' for now
-    onError: (error: string) => void;
-    onFinish: (reason: string) => void; // e.g., "stop", "tool_calls", "error"
+    onUpdate: (contentChunk: string, isFinal: boolean) => void; 
+    onToolCall?: (toolCalls: ToolCall[]) => Promise<void>; 
+    onError: (errorMsg: string, errorDetails?: unknown) => void; 
+    onFinish: (reason?: string) => void; 
 }
+
+// Define a structure for tool calls that the LLM provider can return
+// Moved ToolCallFunction and ToolCall to mcp.ts as they are more generic
+// export interface ToolCallFunction {
+// name: string;
+// arguments: string; // JSON string of arguments
+// }
+
+// export interface ToolCall {
+// id: string; // Unique ID for the tool call, to be sent back with the result
+// type: 'function'; // Currently, only 'function' is supported
+// function: ToolCallFunction;
+// }
 
 
 export interface LLMProvider {
@@ -39,7 +62,7 @@ export interface ProviderSettings {
     apiEndpoint?: string;
     defaultModel?: string;
     // Add other common or provider-specific fields here
-    [key: string]: any; // Allow for arbitrary provider-specific settings
+    [key: string]: unknown; // Allow for arbitrary provider-specific settings
 }
 
 export type LLMProviderType = 

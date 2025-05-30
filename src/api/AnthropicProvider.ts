@@ -50,6 +50,13 @@ interface AnthropicStreamEvent {
     index?: number; // For content_block_start
 }
 
+interface AnthropicMessageStopEvent {
+    type: "message_stop";
+    stop_reason?: string; // Made optional as per usage
+    "amazon-bedrock-converse-content-block-stop"?: { // For Bedrock
+        stop_reason: string;
+    };
+}
 
 export class AnthropicProvider implements LLMProvider {
     readonly providerName = "anthropic";
@@ -214,18 +221,17 @@ export class AnthropicProvider implements LLMProvider {
                                     // Can get input/output tokens from parsedData.message.usage
                                     break;
                                 case 'content_block_delta':
-                                    if (parsedData.delta?.type === 'text_delta' && parsedData.delta.text) {
-                                        callbacks.onContent(parsedData.delta.text, false);
+                                    if (parsedData.delta && parsedData.delta.text) {
+                                        callbacks.onUpdate(parsedData.delta.text, false);
                                     }
-                                    // TODO: Handle 'thinking_delta' if needed
                                     break;
                                 case 'message_delta':
                                     // console.log("Anthropic message_delta:", parsedData);
                                     // Can get incremental output_tokens from parsedData.usage
                                     break;
                                 case 'message_stop':
-                                    // console.log("Anthropic message_stop");
-                                    callbacks.onFinish("stop"); // Or map reason if available
+                                    callbacks.onUpdate("", true); 
+                                    callbacks.onFinish( (parsedData as AnthropicMessageStopEvent).stop_reason || "stop"); // Added type assertion and fixed property access
                                     return; // Stream finished
                                 case 'ping':
                                     // console.log("Anthropic ping");

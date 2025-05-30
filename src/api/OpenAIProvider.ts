@@ -2,7 +2,7 @@
 import { Notice } from 'obsidian';
 import { ObsigentPluginSettings } from '../main';
 import { McpTool } from '../types/mcp';
-import { LLMProvider, StreamCallbacks, ProviderSettings } from './LLMProvider'; // Import new interfaces
+import { LLMProvider, StreamCallbacks, ProviderSettings, ToolCall } from './LLMProvider'; // Import new interfaces
 
 // OpenAI specific message and tool structures (can remain here)
 export interface OpenAIMessage {
@@ -89,6 +89,14 @@ export class OpenAIProvider implements LLMProvider {
             stream: true,
         };
 
+        // Add temperature and max_tokens if they are defined in providerSettings
+        if (providerSettings.temperature !== undefined) {
+            requestBody.temperature = providerSettings.temperature as number;
+        }
+        if (providerSettings.max_tokens !== undefined) {
+            requestBody.max_tokens = providerSettings.max_tokens as number;
+        }
+
         // if (availableTools && availableTools.length > 0) {
         //     requestBody.tools = availableTools.map(tool => ({
         //         type: "function",
@@ -173,7 +181,7 @@ export class OpenAIProvider implements LLMProvider {
                                 const finishReason = parsed.choices[0].finish_reason;
 
                                 if (delta?.content) {
-                                    callbacks.onContent(delta.content, false);
+                                    callbacks.onUpdate(delta.content, false); // Changed to onUpdate
                                 }
                                 
                                 if (delta?.tool_calls) {
@@ -186,21 +194,16 @@ export class OpenAIProvider implements LLMProvider {
                                         if (tcChunk.type) currentToolCallsAccumulator[index].type = tcChunk.type as "function";
                                         if (tcChunk.function?.name) currentToolCallsAccumulator[index].function.name += tcChunk.function.name;
                                         if (tcChunk.function?.arguments) currentToolCallsAccumulator[index].function.arguments += tcChunk.function.arguments;
-                                        
-                                        if (callbacks.onToolCallChunk) {
-                                            // For now, sending the accumulating tool call.
-                                            // Consider if only complete parts should be sent or if this is fine.
-                                            callbacks.onToolCallChunk(currentToolCallsAccumulator[index], false, index);
-                                        }
                                     });
                                 }
 
                                 if (finishReason) {
-                                    if (finishReason === "tool_calls" && callbacks.onToolCallsDone) {
-                                        callbacks.onToolCallsDone(currentToolCallsAccumulator.filter(tc => tc && tc.id && tc.function.name));
-                                        currentToolCallsAccumulator = []; 
-                                    } else if (finishReason === "stop") {
-                                        callbacks.onContent("", true); 
+                                    if (finishReason === "tool_calls") {
+                                        if (callbacks.onToolCall) { // Use onToolCall
+                                            await callbacks.onToolCall(currentToolCallsAccumulator.filter(tc => tc && tc.id && tc.function.name && tc.function.arguments) as ToolCall[]);
+                                        }
+                                    } else {
+                                        callbacks.onUpdate("", true); // Changed to onUpdate
                                     }
                                     callbacks.onFinish(finishReason);
                                     return; 

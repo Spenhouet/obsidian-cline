@@ -103,11 +103,17 @@ export class OllamaProvider implements LLMProvider {
                     if (buffer.trim()) {
                         try {
                             const parsed = JSON.parse(buffer) as OllamaChatStreamResponse;
-                            if (parsed.message?.content) {
-                                callbacks.onContent(parsed.message.content, parsed.done);
+                            if (parsed.message && parsed.message.content) {
+                                // callbacks.onContent(parsed.message.content, parsed.done);
+                                callbacks.onUpdate(parsed.message.content, parsed.done); // Changed to onUpdate
                             }
                             if (parsed.done) {
-                                callbacks.onFinish(parsed.error ? "error" : "stop"); // Check for explicit error in final chunk
+                                // If done and no content was in this chunk, ensure onUpdate is called with final true
+                                if (!(parsed.message && parsed.message.content)) {
+                                    // callbacks.onContent("", true);
+                                    callbacks.onUpdate("", true); // Changed to onUpdate
+                                }
+                                callbacks.onFinish(parsed.done ? "stop" : undefined);
                                 break;
                             }
                         } catch (e: any) {
@@ -134,10 +140,12 @@ export class OllamaProvider implements LLMProvider {
                             return; // Stop processing on stream error
                         }
                         if (parsed.message?.content) {
-                            callbacks.onContent(parsed.message.content, false); // isFinal is false until 'done' is true
+                            // callbacks.onContent(parsed.message.content, false); // isFinal is false until 'done' is true
+                            callbacks.onUpdate(parsed.message.content, false); // Changed to onUpdate
                         }
                         if (parsed.done) {
-                            callbacks.onContent("", true); // Send final empty content if not already sent
+                            // callbacks.onContent("", true); // Send final empty content if not already sent
+                            callbacks.onUpdate("", true); // Changed to onUpdate
                             callbacks.onFinish("stop");
                             return; // Stream finished
                         }
